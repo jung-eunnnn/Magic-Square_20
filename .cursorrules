@@ -1,0 +1,119 @@
+################################################################################
+project:
+  name: MagicSquare
+  summary: 4×4 격자에 1~16을 한 번씩 배치할 때, 4행·4열·2대각선의 합이 모두 같은지 판별·생성·표시하는 학습용 프로그램.
+  problem_source: Report/4x4_마방진_문제정의_및_배경_보고서.md
+  invariants:
+    - 값 집합은 1~16이며 각 값은 정확히 한 번만 사용한다.
+    - 검사 선은 4행·4열·주대각선 2개(총 10선)로 고정한다. 다른 선을 포함하면 정의 변경으로 문서를 갱신한다.
+    - 위 조건에서 공통 합(매직 합)은 34이다.
+    - 같은 격자·같은 규칙이면 판정 결과는 항상 일관되어야 한다.
+  roles_note: 검증 전용·생성·부분 채움 등 역할은 명시한 뒤 구현한다. 문서와 코드의 역할 정의가 어긋나지 않게 한다.
+################################################################################
+code_style:
+  python_version: "3.10+"
+  style_guide: PEP 8 엄격 준수
+  type_hints: 모든 함수의 파라미터와 반환값에 타입 힌트 필수
+  docstring: Google 스타일 docstring을 모든 public 메서드에 필수
+  max_line_length: 88
+  formatter_note: 행 길이 88은 Black 기준과 동일하게 적용한다.
+################################################################################
+architecture:
+  pattern: ECB (Entity-Control-Boundary)
+  boundary:
+    role: 외부 입출력 담당
+    contains:
+      - UI (웹·데스크톱·터미널 등 사용자 인터페이스)
+      - 공개 API
+      - CLI
+    responsibility: 입력 수집·결과 표시·에러 메시지 표면화. 도메인 규칙은 직접 구현하지 않고 control을 호출한다.
+  control:
+    role: 비즈니스 로직·유스케이스 담당
+    contains:
+      - 마방진 판별·생성·탐색 등 절차 조율
+      - boundary와 entity 사이의 오케스트레이션
+    responsibility: entity를 조합해 유스케이스를 완성한다. 격자 불변 검증 로직을 boundary에 두지 않는다.
+  entity:
+    role: 도메인 데이터 및 규칙 담당
+    contains:
+      - 격자 표현, 값 중복·범위, 선별 합, 마방진 여부 판단 등 순수 도메인 규칙
+    responsibility: 프레임워크·I/O에 의존하지 않는 순수 로직과 자료구조만 둔다.
+  dependency_direction: |
+    허용되는 의존성 방향은 boundary → control → entity 한 방향이다.
+    entity는 boundary·control을 import하거나 참조하지 않는다.
+    control은 entity에만 의존하고 boundary를 알지 않는다(의존성 역전이 필요하면 포트를 entity/control 경계에 둔다).
+    boundary는 control(또는 애플리케이션 서비스)에만 의존한다.
+################################################################################
+tdd_rules:
+  red_phase:
+    description: 실패하는 테스트를 먼저 작성해 스펙을 고정하는 단계
+    rules:
+      - 새 동작·수정에 대한 테스트를 프로덕션 변경보다 먼저 추가한다.
+      - 테스트는 Arrange-Act-Assert 구조와 명확한 기대값을 갖는다.
+      - 테스트를 실행해 실패(또는 의도된 컴파일 실패)를 확인한 뒤 다음 단계로 넘어간다.
+    must_not:
+      - 테스트 없이 프로덕션 코드만 먼저 작성하지 않는다.
+      - 실패를 확인하지 않고 통과에만 맞춘 형식적인 테스트를 두지 않는다.
+  green_phase:
+    description: 현재 테스트를 통과시키기 위한 최소 구현 단계
+    rules:
+      - 실패 중인 테스트를 통과하는 데 필요한 최소한의 코드만 작성한다.
+      - 해당 시점의 테스트 스위트가 녹색이 되도록 한다.
+    must_not:
+      - 이 단계에서 이름 변경·추상화·중복 제거 등 리팩터링을 하지 않는다.
+      - 테스트를 약화·삭제해 녹색을 만드는 방식으로 요구사항을 회피하지 않는다.
+  refactor_phase:
+    description: 외부 관측 동작을 바꾸지 않고 구조를 개선하는 단계
+    rules:
+      - 모든 테스트가 통과한 상태에서만 리팩터링한다.
+      - 기능 변경 없이 가독성·중복 제거·경계 명확화를 한다.
+      - 기존 커버리지를 유지하며 필요 시 동작 동등성을 보여주는 테스트를 보강한다.
+    must_not:
+      - 리팩터링 커밋에 새 기능이나 스펙 변경을 섞지 않는다.
+      - 테스트가 실패하거나 커버리지가 요구치 아래로 떨어진 채로 마무리하지 않는다.
+################################################################################
+testing:
+  framework: pytest
+  pattern: AAA (Arrange-Act-Assert)
+  coverage_minimum: "80%"
+  fixture_scope: |
+    기본은 function 스코프이다.
+    생성 비용이 크고 불변이며 테스트 간 공유해도 격리가 깨지지 않는 자원만 module 스코프를 사용한다.
+    session 스코프는 문서화된 근거와 정리(teardown) 전략이 있을 때만 허용한다.
+  naming_convention: 테스트 모듈·함수·클래스 이름은 test_ 접두사를 필수로 한다(pytest 수집 규칙 준수).
+################################################################################
+forbidden:
+  - pattern: 프로덕션 코드 경로에 디버깅용 print()를 남기기
+    reason: 로그 레벨·포맷·테스트 가역성을 제어할 수 없고 노이즈가 된다.
+    alternative: logging 모듈을 사용하거나 boundary에서 사용자에게 보여줄 출력만 명시적 API로 처리한다.
+  - pattern: 도메인 의미가 있는 숫자·문자열을 코드 여기저기에 하드코딩하기
+    reason: 격자 크기, 값 범위, 매직 합 등은 변경 시 한곳에서 관리해야 한다.
+    alternative: entity에 명명된 상수·Enum·작은 설정 객체로 모은 뒤 참조한다.
+  - pattern: except 단독 또는 광범위한 except Exception 후 pass·무분별한 삼키기
+    reason: 실제 버그와 기대 예외를 구분할 수 없어 원인 추적이 불가능해진다.
+    alternative: 구체적 예외 타입을 잡거나, 실패를 로깅·재전파하고 필요 시 사용자 메시지로 변환한다.
+################################################################################
+file_structure: |
+  # 권장 ECB 레이아웃 (MagicSquare)
+  # .
+  # ├── boundary/          # UI, API, CLI 어댑터
+  # ├── control/           # 유스케이스·흐름
+  # ├── entity/            # 격자·마방진 규칙·순수 도메인
+  # ├── tests/
+  # │   ├── boundary/
+  # │   ├── control/
+  # │   └── entity/
+  # └── Report/            # 문제 정의·배경 문서
+################################################################################
+ai_behavior:
+  before_coding:
+    - 관련 tests/ 하위의 테스트 파일을 열어 기존 케이스·픽스처·스킵 이유를 확인한다.
+    - Report 문서의 불변·역할과 충돌하는 제안을 하지 않는다.
+  during_coding:
+    - architecture.dependency_direction을 위반하는 import나 순환 의존성을 만들지 않는다.
+    - 타입 힌트가 없는 함수·메서드를 새로 추가하지 않는다.
+    - public 메서드에는 Google 스타일 docstring을 둔다.
+  after_coding:
+    - pytest를 실행해 회귀를 확인하고 coverage_minimum을 만족시키도록 필요한 테스트를 보강한다.
+  tdd_compliance:
+    - red_phase에서 리팩터링을 하거나, green_phase에서 구조 대개편을 하는 등 tdd_rules와 어긋나는 작업을 하려면, 진행 전 사용자에게 명시적으로 경고하고 올바른 단계로 나누도록 제안한다.
