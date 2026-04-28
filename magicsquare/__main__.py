@@ -7,6 +7,11 @@ import sys
 
 def main() -> None:
     try:
+        if len(sys.argv) > 1 and sys.argv[1] in ("--tests", "tests"):
+            from magicsquare.screen.test_runner import run_test_runner_app
+
+            run_test_runner_app()
+            return
         from magicsquare.screen.app import run_app
     except ImportError as exc:
         print('PyQt6가 필요합니다. 설치: pip install -e ".[gui]"', file=sys.stderr)
