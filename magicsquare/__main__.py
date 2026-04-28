@@ -12,6 +12,11 @@ def main() -> None:
 
             run_test_runner_app()
             return
+        if len(sys.argv) > 1 and sys.argv[1] in ("--coverage", "coverage"):
+            from magicsquare.screen.coverage_gui import run_coverage_gui_app
+
+            run_coverage_gui_app()
+            return
         from magicsquare.screen.app import run_app
     except ImportError as exc:
         print('PyQt6가 필요합니다. 설치: pip install -e ".[gui]"', file=sys.stderr)
