@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from constants import MATRIX_SIZE
+
 _MAGIC_SUM = 34
 
 
@@ -42,21 +44,23 @@ def _validate_grid(grid: object) -> list[list[int]]:
         raise TypeError
     if not isinstance(grid, list):
         raise TypeError
-    if len(grid) != 4:
+    if len(grid) != MATRIX_SIZE:
         raise ValueError
     for row in grid:
-        if not isinstance(row, list) or len(row) != 4:
+        if not isinstance(row, list) or len(row) != MATRIX_SIZE:
             raise ValueError
         for cell in row:
             if type(cell) is not int:
                 raise TypeError
     g: list[list[int]] = grid  # type: ignore[assignment]
-    for r in range(4):
-        for c in range(4):
+    for r in range(MATRIX_SIZE):
+        for c in range(MATRIX_SIZE):
             v = g[r][c]
             if v != 0 and not (1 <= v <= 16):
                 raise ValueError
-    non_zero = [g[r][c] for r in range(4) for c in range(4) if g[r][c] != 0]
+    non_zero = [
+        g[r][c] for r in range(MATRIX_SIZE) for c in range(MATRIX_SIZE) if g[r][c] != 0
+    ]
     if len(non_zero) != len(set(non_zero)):
         raise ValueError
     blanks = _find_blank_coords(g)
