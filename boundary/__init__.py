@@ -1,0 +1,1 @@
+"""Boundary (UI / adapter) package."""
