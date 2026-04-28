@@ -1,4 +1,5 @@
 # Python
+*.egg-info/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,6 +8,7 @@ venv/
 .env/
 .pytest_cache/
 .coverage
+coverage_gui_tmp.json
 htmlcov/
 .mypy_cache/
 .ruff_cache/
