@@ -8,6 +8,7 @@ venv/
 .env/
 .pytest_cache/
 .coverage
+coverage_gui_tmp.json
 htmlcov/
 .mypy_cache/
 .ruff_cache/
