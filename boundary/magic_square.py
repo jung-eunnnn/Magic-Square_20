@@ -69,6 +69,11 @@ def _validate_grid(grid: object) -> list[list[int]]:
     return g
 
 
+def validate(grid: object) -> list[list[int]]:
+    """Validate the puzzle grid per FR-1; raises ``TypeError`` or ``ValueError``."""
+    return _validate_grid(grid)
+
+
 def solution(grid: list[list[int]]) -> list[int]:
     """Return ``[r1,c1,n1,r2,c2,n2]`` with 1-based row/col; two missing numbers placed."""
     g = [row[:] for row in _validate_grid(grid)]

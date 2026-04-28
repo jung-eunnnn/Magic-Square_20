@@ -60,6 +60,8 @@ pytest --cov=entity --cov=control --cov=boundary --cov-fail-under=80
 
 (패키지 루트 경로는 실제 소스 레이아웃에 맞게 조정합니다.)
 
+**GUI (PyQt6):** `pip install -e ".[gui]"` 후 프로젝트 루트에서 **`python -m magicsquare`** 한 줄로 실행합니다. (Qt 코드는 `magicsquare/screen/`에만 있습니다.)
+
 ---
 
 ## 검증 기준 (PRD §12·NFR와 정렬)
